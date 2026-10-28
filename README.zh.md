@@ -1,6 +1,6 @@
 # PGHBA Fleet Manager
 
-<!--LANGSWITCH-->
+🇮🇩 [ID](README.md) · 🇬🇧 [EN](README.en.md) · 🇨🇳 **ZH** · 🇪🇸 [ES](README.es.md) · 🇸🇦 [AR](README.ar.md) · 🇫🇷 [FR](README.fr.md) · 🇵🇹 [PT](README.pt.md) · 🇧🇩 [BN](README.bn.md) · 🇷🇺 [RU](README.ru.md) · 🇮🇳 [HI](README.hi.md) · 🇹🇭 [TH](README.th.md) · 🇰🇭 [KM](README.km.md) · 🇵🇭 [TL](README.tl.md) · 🇻🇳 [VI](README.vi.md) · 🇯🇵 [JA](README.ja.md) · 🇰🇷 [KO](README.ko.md) · 🇵🇱 [PL](README.pl.md) · 🇮🇹 [IT](README.it.md) · 🇹🇷 [TR](README.tr.md) · 🇮🇳 [TA](README.ta.md) · 🇮🇷 [FA](README.fa.md) · 🇺🇦 [UK](README.uk.md) · 🇩🇪 [DE](README.de.md) · 🇳🇱 [NL](README.nl.md)
 
 PostgreSQL `pg_hba.conf` 集中管理系统 —— 通过单一 Web 界面管理整个
 PostgreSQL 实例集群的访问规则，无需在每台主机上手动编辑 `pg_hba.conf`。
