@@ -11,6 +11,9 @@ PGHBA Manager project: default-password enforcement, startup secret
 validation, SSH host key pinning, login rate limiting, and a CI pipeline
 that scans dependencies on every push. See [Security](#security) below.
 
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
+<br>☕ Buy me a cup of coffee.
+
 ---
 
 ## Screenshots

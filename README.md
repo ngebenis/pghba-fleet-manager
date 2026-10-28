@@ -12,6 +12,9 @@ validasi secret saat startup, SSH host key pinning, rate limiting login,
 dan pipeline CI yang memindai dependency di setiap push. Lihat bagian
 [Keamanan](#keamanan) di bawah.
 
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
+<br>☕ Silakan traktir saya dengan secangkir kopi.
+
 ---
 
 ## Screenshot
