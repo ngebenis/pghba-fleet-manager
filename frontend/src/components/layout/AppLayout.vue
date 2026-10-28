@@ -48,8 +48,9 @@
           <input v-model="searchQuery" :placeholder="$t('common.search')" />
         </div>
         <div class="topbar-right">
-          <button :class="['lang-btn', locale === 'en' ? 'active' : '']" @click="setLocale('en')">&#127468;&#127463; EN</button>
-          <button :class="['lang-btn', locale === 'id' ? 'active' : '']" @click="setLocale('id')">&#127470;&#127465; ID</button>
+          <select class="lang-select" :value="locale" @change="setLocale(($event.target as HTMLSelectElement).value as any)">
+            <option v-for="l in AVAILABLE_LOCALES" :key="l.code" :value="l.code">{{ l.flag }} {{ l.name }}</option>
+          </select>
           <NotificationBell />
           <button class="theme-btn" @click="theme.toggle()">
             <i :class="['ti', theme.current === 'dark' ? 'ti-sun' : 'ti-moon']"></i>
@@ -70,7 +71,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import { globalSearch } from '@/stores/search'
-import { useI18n } from '@/i18n'
+import { useI18n, AVAILABLE_LOCALES } from '@/i18n'
 import NotificationBell from '@/components/NotificationBell.vue'
 
 const auth    = useAuthStore()
@@ -131,8 +132,7 @@ async function logout() {
 .topbar-search { flex:1;max-width:320px;display:flex;align-items:center;gap:8px;background:var(--c-bg);border:1px solid var(--c-border);border-radius:6px;padding:6px 10px; }
 .topbar-search input { background:none;border:none;outline:none;color:var(--c-text);font-size:12px;width:100%; }
 .topbar-right { display:flex;align-items:center;gap:6px;margin-left:auto; }
-.lang-btn { background:var(--c-surface2);border:1px solid var(--c-border);color:var(--c-muted);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px; }
-.lang-btn.active { background:#ffffff;color:#1a1a2e;border-color:#ffffff;font-weight:700; }
+.lang-select { background:var(--c-surface2);border:1px solid var(--c-border);color:var(--c-text);padding:5px 8px;border-radius:4px;cursor:pointer;font-size:11px;max-width:150px; }
 .theme-btn { display:flex;align-items:center;gap:4px;background:var(--c-surface2);border:1px solid var(--c-border);color:var(--c-muted);padding:5px 10px;border-radius:5px;cursor:pointer;font-size:11px; }
 .page-scroll { flex:1;overflow-y:auto;overflow-x:hidden; }
 .sidebar-toggle { display:none;background:none;border:none;color:var(--c-text);font-size:20px;cursor:pointer;padding:4px 8px;flex-shrink:0; }
