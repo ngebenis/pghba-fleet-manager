@@ -16,10 +16,16 @@ func SecurityHeaders() gin.HandlerFunc {
 		// bundle still needs inline styles from component <style> blocks
 		// (Vite emits some at runtime) — connect-src 'self' is what
 		// actually matters here, keeping XHR/fetch confined to this origin.
+		// style-src/font-src also allow the two CDNs main.css loads at
+		// build time (Google Fonts for JetBrains Mono, jsDelivr for the
+		// Tabler Icons webfont) — without them the browser silently blocks
+		// both @import rules and every icon in the UI renders blank.
 		h.Set("Content-Security-Policy",
-			"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "+
-				"img-src 'self' data:; font-src 'self' data:; connect-src 'self'; "+
-				"frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
+			"default-src 'self'; script-src 'self'; "+
+				"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "+
+				"img-src 'self' data:; "+
+				"font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; "+
+				"connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
 		c.Next()
 	}
 }

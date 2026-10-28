@@ -191,6 +191,7 @@
             <div class="import-stats">
               <div class="stat-pill green"><i class="ti ti-check"></i> {{ importResult.imported }} imported</div>
               <div class="stat-pill gray"><i class="ti ti-minus"></i> {{ importResult.skipped }} skipped</div>
+              <div class="stat-pill red" v-if="importResult.failed > 0"><i class="ti ti-alert-triangle"></i> {{ importResult.failed }} failed</div>
             </div>
             <div style="margin-top:10px;font-size:11px;color:var(--c-muted)">
               PATH: <span style="font-family:monospace;color:var(--c-text)">{{ importResult.path }}</span>
@@ -470,6 +471,9 @@
               <div class="import-stats" style="margin-bottom:14px">
                 <div class="stat-pill green"><i class="ti ti-check"></i> {{ bulkResult.total_imported }} rules imported</div>
                 <div class="stat-pill gray"><i class="ti ti-minus"></i> {{ bulkResult.total_skipped }} skipped</div>
+                <div class="stat-pill" :class="bulkResult.total_failed > 0 ? 'red' : 'gray'" v-if="bulkResult.total_failed">
+                  <i class="ti ti-alert-triangle"></i> {{ bulkResult.total_failed }} rules failed
+                </div>
                 <div class="stat-pill" :class="bulkResult.total_errors > 0 ? 'red' : 'gray'">
                   <i class="ti ti-alert-circle"></i> {{ bulkResult.total_errors }} errors
                 </div>
@@ -671,6 +675,7 @@ async function importHBA(inst: PGInstance) {
     importResult.value = { ...data, instance_id: inst.id }
     if (data.imported > 0) toast.success(`Imported ${data.imported} rules from ${inst.instance_name}`)
     else toast.info(`No new rules (${data.skipped} already exist)`)
+    if (data.failed > 0) toast.error(`${data.failed} rule(s) failed to import — see details`)
   } catch (e: any) {
     toast.error(e.response?.data?.error || 'Import failed')
   } finally { importing.value = null }
@@ -743,6 +748,7 @@ async function doBulkImport() {
     } else {
       toast.info(`Bulk import: all rules already exist (${data.total_skipped} skipped)`)
     }
+    if (data.total_failed > 0) toast.error(`${data.total_failed} rule(s) across instances failed to import — see details`)
     await load()
   } catch (e: any) {
     toast.error(e.response?.data?.error || 'Bulk import failed')

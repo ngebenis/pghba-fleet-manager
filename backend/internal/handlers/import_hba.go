@@ -46,6 +46,7 @@ func (h *InstanceHandler) ImportHBA(c *gin.Context) {
 			"action":   "import_hba",
 			"imported": result["imported"],
 			"skipped":  result["skipped"],
+			"failed":   result["failed"],
 			"path":     inst.HBAPath,
 		},
 	)
@@ -57,6 +58,7 @@ func (h *InstanceHandler) ImportHBA(c *gin.Context) {
 		"path":     inst.HBAPath,
 		"imported": result["imported"],
 		"skipped":  result["skipped"],
+		"failed":   result["failed"],
 		"rules":    result["rules"],
 	})
 }
@@ -86,6 +88,7 @@ func (h *InstanceHandler) BulkImportHBA(c *gin.Context) {
 		HBAPath      string `json:"hba_path"`
 		Imported     int    `json:"imported"`
 		Skipped      int    `json:"skipped"`
+		Failed       int    `json:"failed"`
 		Error        string `json:"error,omitempty"`
 		Status       string `json:"status"`
 	}
@@ -93,6 +96,7 @@ func (h *InstanceHandler) BulkImportHBA(c *gin.Context) {
 	results := []InstanceResult{}
 	totalImported := 0
 	totalSkipped := 0
+	totalFailed := 0
 	totalErrors := 0
 
 	for _, inst := range instances {
@@ -119,9 +123,11 @@ func (h *InstanceHandler) BulkImportHBA(c *gin.Context) {
 		} else {
 			r.Imported = result["imported"].(int)
 			r.Skipped = result["skipped"].(int)
+			r.Failed = result["failed"].(int)
 			r.Status = "success"
 			totalImported += r.Imported
 			totalSkipped += r.Skipped
+			totalFailed += r.Failed
 		}
 
 		results = append(results, r)
@@ -133,7 +139,7 @@ func (h *InstanceHandler) BulkImportHBA(c *gin.Context) {
 			&inst.ID,
 			fmt.Sprintf("%s:%d", inst.InstanceName, inst.Port),
 			c.ClientIP(),
-			map[string]interface{}{"imported": r.Imported, "skipped": r.Skipped},
+			map[string]interface{}{"imported": r.Imported, "skipped": r.Skipped, "failed": r.Failed},
 		)
 	}
 
@@ -141,6 +147,7 @@ func (h *InstanceHandler) BulkImportHBA(c *gin.Context) {
 		"message":         "bulk import complete",
 		"total_imported":  totalImported,
 		"total_skipped":   totalSkipped,
+		"total_failed":    totalFailed,
 		"total_errors":    totalErrors,
 		"total_instances": len(instances),
 		"results":         results,
@@ -186,6 +193,7 @@ func importHBAForInstance(
 	rules := services.ParseHBAContent(content, inst.ID)
 	imported := 0
 	skipped := 0
+	failed := 0
 	var ruleResults []gin.H
 
 	for _, rule := range rules {
@@ -207,6 +215,21 @@ func importHBAForInstance(
 					"address": rule.Address,
 					"method":  rule.AuthMethod,
 				})
+			} else {
+				// Previously silently dropped — a line that parses fine but
+				// fails to insert (e.g. a schema mismatch) used to vanish
+				// with no trace, leaving "imported" rules permanently out of
+				// sync with what's actually on the server.
+				failed++
+				ruleResults = append(ruleResults, gin.H{
+					"action":  "failed",
+					"type":    rule.RuleType,
+					"db":      rule.Database,
+					"user":    rule.DBUser,
+					"address": rule.Address,
+					"method":  rule.AuthMethod,
+					"error":   createErr.Error(),
+				})
 			}
 		} else if err == nil {
 			skipped++
@@ -216,6 +239,7 @@ func importHBAForInstance(
 	return map[string]interface{}{
 		"imported": imported,
 		"skipped":  skipped,
+		"failed":   failed,
 		"rules":    ruleResults,
 	}, nil
 }
