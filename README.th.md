@@ -12,6 +12,12 @@
 การจำกัดอัตราการเข้าสู่ระบบ และไปป์ไลน์ CI ที่สแกนดีเพนเดนซีทุกครั้งที่ push
 ดูรายละเอียดที่ [ความปลอดภัย](#ความปลอดภัย) ด้านล่าง
 
+🌐 **พร้อมใช้งาน 24 ภาษา** — สลับได้ทุกเมื่อจากดรอปดาวน์บนแถบด้านบน:
+English, Bahasa Indonesia, 中文, Español, العربية, Français, Português,
+বাংলা, Русский, हिन्दी, ไทย, ខ្មែរ, Tagalog, Tiếng Việt, 日本語, 한국어,
+Polski, Italiano, Türkçe, தமிழ், فارسی, Українська, Deutsch, Nederlands
+ภาษาอาหรับและเปอร์เซียจะเรนเดอร์จากขวาไปซ้ายโดยอัตโนมัติ
+
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
 <br>☕ เลี้ยงกาแฟฉันสักแก้วได้นะ
 
@@ -147,6 +153,11 @@ npm run dev
 - **CI สแกนหาดีเพนเดนซีที่มีช่องโหว่ที่รู้จัก** ทุกครั้งที่ push/PR และทุกสัปดาห์
   (`.github/workflows/security.yml`): `govulncheck` สำหรับ backend Go
   `npm audit` (ดีเพนเดนซีสำหรับการใช้งานจริง) สำหรับ frontend
+- **Migration ฐานข้อมูลถูกฝังไว้และนำไปใช้เองโดยอัตโนมัติ** ไฟล์ SQL ทุกไฟล์ใน
+  `backend/internal/database/migrations/` ถูกฝังไว้ในไบนารี (`go:embed`)
+  และนำไปใช้โดยอัตโนมัติ — ติดตามผ่านตาราง `schema_migrations` — ทุกครั้งที่
+  เริ่มทำงาน ดังนั้นการ deploy จะไม่มีทางข้ามการเปลี่ยนแปลง schema ไปอย่างเงียบๆ
+  เหมือนที่อาจเกิดขึ้นกับสคริปต์ migration ที่รันด้วยมือ
 - การส่งออกข้อมูลสำรอง, CORS, และ HTTP response headers ได้รับการเสริมความแข็งแกร่ง — ดู
   `backend/internal/handlers/export.go` (การทำความสะอาด path segment),
   `backend/internal/server/router.go` (CORS จะไม่อนุญาต cross-origin
@@ -169,7 +180,8 @@ pghba-fleet-manager/
 │   │   └── reencrypt-ssh-keys/         # เครื่องมือหมุนเวียน secret (ดูความปลอดภัย)
 │   └── internal/
 │       ├── config/                     # ตัวโหลด config + ตรวจสอบ secret ตอนเริ่มทำงาน
-│       ├── database/                   # การเชื่อมต่อ GORM
+│       ├── database/                   # การเชื่อมต่อ GORM + migration runner แบบฝังในตัว
+│       │   └── migrations/             # 001 (baseline ผ่าน initdb) + 002–008 นำไปใช้อัตโนมัติตอนเริ่มทำงาน
 │       ├── models/                     # โมเดล GORM ทั้งหมด
 │       ├── middleware/                 # JWT auth, RBAC, rate limiting, security headers
 │       ├── handlers/                   # Gin HTTP handlers
@@ -196,14 +208,11 @@ pghba-fleet-manager/
 │   └── src/
 │       ├── api/index.ts                # Axios API client
 │       ├── types/index.ts              # TypeScript interfaces (mirrors Go models)
+│       ├── i18n/                       # ไฟล์ locale 24 ไฟล์ + registry AVAILABLE_LOCALES (รองรับ RTL)
 │       ├── stores/auth.ts              # Pinia auth store
 │       ├── router/index.ts             # Vue Router with auth + force-password-change guards
 │       ├── components/layout/AppLayout.vue
 │       └── views/                      # One view per feature area
-│
-├── database/migrations/
-│   ├── 001_init.sql                    # Full schema with enums, indexes, triggers
-│   └── 002–007_*.sql                   # RBAC roles, backup schedules, password/host-key hardening
 │
 ├── docs/rotate-secrets.md              # Secret rotation runbook
 ├── .github/workflows/security.yml      # CI: build/vet/govulncheck + npm audit

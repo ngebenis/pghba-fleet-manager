@@ -12,6 +12,13 @@ PostgreSQL `pg_hba.conf` மைய மேலாண்மை அமைப்ப�
 வீத வரம்பு, மற்றும் ஒவ்வொரு புஷ்ஷிலும் சார்புகளை ஸ்கேன் செய்யும் CI
 பைப்லைன். கீழே உள்ள [பாதுகாப்பு](#பாதுகாப்பு) பகுதியைப் பார்க்கவும்.
 
+🌐 **24 மொழிகள் உடனடியாகக் கிடைக்கும்** — மேல் பட்டியில் உள்ள
+drop-down-இலிருந்து எப்போது வேண்டுமானாலும் மாற்றவும்: English, Bahasa
+Indonesia, 中文, Español, العربية, Français, Português, বাংলা, Русский,
+हिन्दी, ไทย, ខ្មែរ, Tagalog, Tiếng Việt, 日本語, 한국어, Polski, Italiano,
+Türkçe, தமிழ், فارسی, Українська, Deutsch, Nederlands. அரபிக் மற்றும்
+பாரசீக மொழிகள் தானாகவே வலமிருந்து இடமாக காட்டப்படும்.
+
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
 <br>☕ தயவுசெய்து எனக்கு ஒரு கப் காபி வாங்கிக் கொடுங்கள்.
 
@@ -154,6 +161,13 @@ npm run dev
   (`.github/workflows/security.yml`) அறியப்பட்ட பாதிப்புள்ள சார்புகளை
   ஸ்கேன் செய்கிறது: Go backend-க்கு `govulncheck`, frontend-க்கு `npm
   audit` (production சார்புகள்).
+- **தரவுத்தள migration-கள் embed செய்யப்பட்டு தானாகவே இயக்கப்படும்.**
+  `backend/internal/database/migrations/`-இல் உள்ள ஒவ்வொரு SQL
+  கோப்பும் binary-க்குள் embed செய்யப்பட்டு (`go:embed`) ஒவ்வொரு
+  தொடக்கத்திலும் தானாகவே பயன்படுத்தப்படும் — ஒரு `schema_migrations`
+  அட்டவணையில் கண்காணிக்கப்படும் — எனவே கைமுறையாக இயக்கப்படும் migration
+  ஸ்கிரிப்ட் தவிர்க்கக்கூடிய ஸ்கீமா மாற்றத்தை ஒரு டெப்ளாய்மென்ட் ஒருபோதும்
+  அமைதியாகத் தவிர்க்காது.
 - காப்புப்பிரதி ஏற்றுமதி, CORS, மற்றும் HTTP பதில் தலைப்புகள்
   பலப்படுத்தப்பட்டுள்ளன — பார்க்கவும் `backend/internal/handlers/export.go`
   (பாதை-பிரிவு சுத்திகரிப்பு), `backend/internal/server/router.go`
@@ -179,7 +193,8 @@ pghba-fleet-manager/
 │   │   └── reencrypt-ssh-keys/         # ரகசிய சுழற்சி கருவி (பாதுகாப்பைப் பார்க்கவும்)
 │   └── internal/
 │       ├── config/                     # கட்டமைப்பு ஏற்றி + தொடக்க ரகசிய சரிபார்ப்பு
-│       ├── database/                   # GORM இணைப்பு
+│       ├── database/                   # GORM இணைப்பு + embed செய்யப்பட்ட SQL migration இயந்திரம்
+│       │   └── migrations/             # 001 (அடிப்படை, initdb வழியாக) + 002–008, தொடக்கத்தில் தானாக பயன்படுத்தப்படும்
 │       ├── models/                     # அனைத்து GORM மாடல்கள்
 │       ├── middleware/                 # JWT auth, RBAC, வீத வரம்பு, பாதுகாப்பு தலைப்புகள்
 │       ├── handlers/                   # Gin HTTP ஹேண்ட்லர்கள்
@@ -206,14 +221,11 @@ pghba-fleet-manager/
 │   └── src/
 │       ├── api/index.ts                # Axios API கிளையன்ட்
 │       ├── types/index.ts              # TypeScript இன்டர்ஃபேஸ்கள் (Go மாடல்களை பிரதிபலிக்கும்)
+│       ├── i18n/                       # 24 locale கோப்புகள் + AVAILABLE_LOCALES registry (RTL ஆதரவு)
 │       ├── stores/auth.ts              # Pinia auth store
 │       ├── router/index.ts             # auth + கட்டாய கடவுச்சொல் மாற்று காப்புடன் Vue Router
 │       ├── components/layout/AppLayout.vue
 │       └── views/                      # ஒவ்வொரு அம்சப் பகுதிக்கும் ஒரு view
-│
-├── database/migrations/
-│   ├── 001_init.sql                    # enum, index, trigger-களுடன் முழு ஸ்கீமா
-│   └── 002–007_*.sql                   # RBAC பங்குகள், காப்புப்பிரதி அட்டவணைகள், கடவுச்சொல்/host-key வலுவூட்டல்
 │
 ├── docs/rotate-secrets.md              # ரகசிய சுழற்சி வழிகாட்டி
 ├── .github/workflows/security.yml      # CI: build/vet/govulncheck + npm audit

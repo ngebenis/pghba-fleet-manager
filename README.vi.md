@@ -12,6 +12,13 @@ thực secret khi khởi động, SSH host key pinning, giới hạn tốc độ
 nhập, và pipeline CI quét dependency ở mỗi lần push. Xem phần
 [Bảo mật](#bảo-mật) bên dưới.
 
+🌐 **24 ngôn ngữ sẵn dùng** — chuyển đổi bất cứ lúc nào từ menu thả xuống
+trên thanh top bar: English, Bahasa Indonesia, 中文, Español, العربية,
+Français, Português, বাংলা, Русский, हिन्दी, ไทย, ខ្មែរ, Tagalog, Tiếng
+Việt, 日本語, 한국어, Polski, Italiano, Türkçe, தமிழ், فارسی, Українська,
+Deutsch, Nederlands. Tiếng Ả Rập và tiếng Ba Tư tự động hiển thị theo
+chiều phải-sang-trái.
+
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
 <br>☕ Mời tôi một tách cà phê nhé.
 
@@ -150,6 +157,12 @@ npm run dev
 - **CI quét các dependency có lỗ hổng đã biết** ở mỗi lần push/PR và hàng
   tuần (`.github/workflows/security.yml`): `govulncheck` cho backend Go,
   `npm audit` (dependency production) cho frontend.
+- **Database migration được nhúng sẵn và tự động áp dụng.** Mỗi file SQL
+  trong `backend/internal/database/migrations/` được đóng gói vào trong
+  binary (`go:embed`) và tự động áp dụng — được theo dõi trong bảng
+  `schema_migrations` — ở mỗi lần khởi động, nên một lần deploy không bao
+  giờ có thể âm thầm bỏ qua một thay đổi schema như cách có thể xảy ra
+  với một migration script chạy thủ công.
 - Backup export, CORS và HTTP response headers đã được tăng cường bảo mật
   — xem `backend/internal/handlers/export.go` (sanitize path-segment),
   `backend/internal/server/router.go` (CORS mặc định không cho truy cập
@@ -172,7 +185,8 @@ pghba-fleet-manager/
 │   │   └── reencrypt-ssh-keys/         # Công cụ xoay vòng secret (xem Bảo mật)
 │   └── internal/
 │       ├── config/                     # Config loader + xác thực secret khi khởi động
-│       ├── database/                   # Kết nối GORM
+│       ├── database/                   # Kết nối GORM + embedded SQL migration runner
+│       │   └── migrations/             # 001 (baseline, qua initdb) + 002–008, tự động áp dụng khi khởi động
 │       ├── models/                     # Toàn bộ model GORM
 │       ├── middleware/                 # JWT auth, RBAC, rate limiting, security headers
 │       ├── handlers/                   # Gin HTTP handlers
@@ -199,14 +213,11 @@ pghba-fleet-manager/
 │   └── src/
 │       ├── api/index.ts                # Axios API client
 │       ├── types/index.ts              # TypeScript interface (phản chiếu Go model)
+│       ├── i18n/                       # 24 file locale + registry AVAILABLE_LOCALES (hỗ trợ RTL)
 │       ├── stores/auth.ts              # Pinia auth store
 │       ├── router/index.ts             # Vue Router với auth + force-password-change guard
 │       ├── components/layout/AppLayout.vue
 │       └── views/                      # Mỗi view cho một khu vực tính năng
-│
-├── database/migrations/
-│   ├── 001_init.sql                    # Schema đầy đủ với enum, index, trigger
-│   └── 002–007_*.sql                   # RBAC roles, backup schedule, hardening password/host-key
 │
 ├── docs/rotate-secrets.md              # Runbook xoay vòng secret
 ├── .github/workflows/security.yml      # CI: build/vet/govulncheck + npm audit

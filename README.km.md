@@ -12,6 +12,12 @@
 ការកំណត់អត្រាចូលប្រើ និង pipeline CI ដែលស្កេនឌីផិនឌង់ស៊ីរាល់ពេល push
 សូមមើល [សុវត្ថិភាព](#សុវត្ថិភាព) ខាងក្រោម
 
+🌐 **24 ភាសាជាស្រេច** — ប្ដូរបានគ្រប់ពេលពីម៉ឺនុយទម្លាក់ចុះនៅលើរបារខាងលើ៖
+English, Bahasa Indonesia, 中文, Español, العربية, Français, Português,
+বাংলা, Русский, हिन्दी, ไทย, ខ្មែរ, Tagalog, Tiếng Việt, 日本語, 한국어,
+Polski, Italiano, Türkçe, தமிழ், فارسی, Українська, Deutsch, Nederlands។
+អារ៉ាប់ និងពែរ្សៀនបង្ហាញពីស្ដាំទៅឆ្វេងដោយស្វ័យប្រវត្តិ។
+
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
 <br>☕ សូមចាក់កាហ្វេមួយកែវជូនខ្ញុំផង។
 
@@ -150,6 +156,12 @@ npm run dev
 - **CI ស្កេនរកឌីផិនឌង់ស៊ីដែលងាយរងគ្រោះដែលគេស្គាល់** រាល់ពេល push/PR និងរៀងរាល់
   សប្ដាហ៍ (`.github/workflows/security.yml`)៖ `govulncheck` សម្រាប់ backend Go
   `npm audit` (ឌីផិនឌង់ស៊ីផលិតកម្ម) សម្រាប់ frontend។
+- **Migration មូលដ្ឋានទិន្នន័យត្រូវបានបញ្ចូលក្នុង binary និងអនុវត្តដោយខ្លួនឯង។**
+  ឯកសារ SQL រាល់ឯកសារនៅក្នុង `backend/internal/database/migrations/`
+  ត្រូវបានបញ្ចូលក្នុង binary (`go:embed`) ហើយអនុវត្តដោយស្វ័យប្រវត្តិ — ដែល
+  តាមដានតាមរយៈតារាង `schema_migrations` — រាល់ពេលចាប់ផ្ដើម ដូច្នេះការដាក់
+  ឱ្យប្រើប្រាស់មិនអាចរំលងការផ្លាស់ប្ដូរ schema ដោយស្ងាត់ៗបានឡើយ ដូចអាចកើតឡើង
+  ជាមួយស្គ្រីប migration ដែលដំណើរការដោយដៃ។
 - ការនាំចេញការបម្រុងទុក, CORS, និង HTTP response headers ត្រូវបានពង្រឹង — សូមមើល
   `backend/internal/handlers/export.go` (ការសម្អាត path segment),
   `backend/internal/server/router.go` (CORS លំនាំដើមមិនអនុញ្ញាតសិទ្ធិចូលប្រើ
@@ -172,7 +184,8 @@ pghba-fleet-manager/
 │   │   └── reencrypt-ssh-keys/         # ឧបករណ៍ប្ដូរ secret (មើលសុវត្ថិភាព)
 │   └── internal/
 │       ├── config/                     # កម្មវិធីផ្ទុក config + ផ្ទៀងផ្ទាត់ secret ពេលចាប់ផ្ដើម
-│       ├── database/                   # ការភ្ជាប់ GORM
+│       ├── database/                   # ការភ្ជាប់ GORM + migration runner បញ្ចូលក្នុង binary
+│       │   └── migrations/             # 001 (baseline តាម initdb) + 002–008 អនុវត្តដោយស្វ័យប្រវត្តិពេលចាប់ផ្ដើម
 │       ├── models/                     # គំរូ GORM ទាំងអស់
 │       ├── middleware/                 # JWT auth, RBAC, rate limiting, security headers
 │       ├── handlers/                   # Gin HTTP handlers
@@ -199,14 +212,11 @@ pghba-fleet-manager/
 │   └── src/
 │       ├── api/index.ts                # Axios API client
 │       ├── types/index.ts              # TypeScript interfaces (mirrors Go models)
+│       ├── i18n/                       # ឯកសារ locale 24 + registry AVAILABLE_LOCALES (គាំទ្រ RTL)
 │       ├── stores/auth.ts              # Pinia auth store
 │       ├── router/index.ts             # Vue Router with auth + force-password-change guards
 │       ├── components/layout/AppLayout.vue
 │       └── views/                      # One view per feature area
-│
-├── database/migrations/
-│   ├── 001_init.sql                    # Full schema with enums, indexes, triggers
-│   └── 002–007_*.sql                   # RBAC roles, backup schedules, password/host-key hardening
 │
 ├── docs/rotate-secrets.md              # Secret rotation runbook
 ├── .github/workflows/security.yml      # CI: build/vet/govulncheck + npm audit

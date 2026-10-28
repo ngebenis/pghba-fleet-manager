@@ -12,6 +12,12 @@
 CI که در هر push وابستگی‌ها را اسکن می‌کند. بخش [امنیت](#امنیت) در ادامه
 را ببینید.
 
+🌐 **۲۴ زبان از ابتدا** — هر زمان که بخواهید از منوی کشویی در نوار بالا
+تغییر دهید: English, Bahasa Indonesia, 中文, Español, العربية, Français,
+Português, বাংলা, Русский, हिन्दी, ไทย, ខ្មែរ, Tagalog, Tiếng Việt, 日本語,
+한국어, Polski, Italiano, Türkçe, தமிழ், فارسی, Українська, Deutsch,
+Nederlands. عربی و فارسی به‌صورت خودکار راست‌به‌چپ نمایش داده می‌شوند.
+
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
 <br>☕ یک فنجان قهوه برایم مهمان کنید.
 
@@ -150,6 +156,12 @@ npm run dev
 - **CI در هر push/PR و هفتگی وابستگی‌های دارای آسیب‌پذیری شناخته‌شده را
   اسکن می‌کند** (`.github/workflows/security.yml`): `govulncheck` برای
   بک‌اند Go، `npm audit` (وابستگی‌های تولید) برای فرانت‌اند.
+- **مهاجرت‌های پایگاه‌داده جاسازی‌شده و خودکار هستند.** هر فایل SQL در
+  `backend/internal/database/migrations/` در باینری جاسازی می‌شود
+  (`go:embed`) و به‌طور خودکار اعمال می‌شود — که در جدول
+  `schema_migrations` ردیابی می‌شود — در هر راه‌اندازی، بنابراین یک
+  استقرار هرگز نمی‌تواند به‌طور خاموش یک تغییر طرحواره را از قلم
+  بیندازد، همان‌طور که ممکن است با یک اسکریپت مهاجرت دستی رخ دهد.
 - صدور پشتیبان، CORS و هدرهای پاسخ HTTP سخت‌شده‌اند — ببینید
   `backend/internal/handlers/export.go` (پاک‌سازی بخش مسیر)،
   `backend/internal/server/router.go` (CORS به‌طور پیش‌فرض اجازهٔ
@@ -172,7 +184,8 @@ pghba-fleet-manager/
 │   │   └── reencrypt-ssh-keys/         # ابزار چرخش اسرار (به بخش امنیت مراجعه کنید)
 │   └── internal/
 │       ├── config/                     # بارگذار پیکربندی + اعتبارسنجی اسرار هنگام راه‌اندازی
-│       ├── database/                   # اتصال GORM
+│       ├── database/                   # اتصال GORM + اجراکنندهٔ مهاجرت SQL جاسازی‌شده
+│       │   └── migrations/             # 001 (پایه، از طریق initdb) + 002–008، به‌طور خودکار در راه‌اندازی اعمال می‌شود
 │       ├── models/                     # همهٔ مدل‌های GORM
 │       ├── middleware/                 # احراز هویت JWT، RBAC، محدودسازی نرخ، هدرهای امنیتی
 │       ├── handlers/                   # هندلرهای HTTP در Gin
@@ -199,14 +212,11 @@ pghba-fleet-manager/
 │   └── src/
 │       ├── api/index.ts                # کلاینت API مبتنی بر Axios
 │       ├── types/index.ts              # اینترفیس‌های TypeScript (منعکس‌کنندهٔ مدل‌های Go)
+│       ├── i18n/                       # 24 فایل زبان + رجیستری AVAILABLE_LOCALES (آگاه از RTL)
 │       ├── stores/auth.ts              # استور احراز هویت Pinia
 │       ├── router/index.ts             # Vue Router با نگهبان‌های احراز هویت + تغییر اجباری رمز
 │       ├── components/layout/AppLayout.vue
 │       └── views/                      # یک ویو برای هر حوزهٔ ویژگی
-│
-├── database/migrations/
-│   ├── 001_init.sql                    # طرحوارهٔ کامل با enum، ایندکس، تریگر
-│   └── 002–007_*.sql                   # نقش‌های RBAC، زمان‌بندی پشتیبان، سخت‌سازی رمز/کلید میزبان
 │
 ├── docs/rotate-secrets.md              # راهنمای چرخش اسرار
 ├── .github/workflows/security.yml      # CI: build/vet/govulncheck + npm audit

@@ -12,6 +12,13 @@ SSH 호스트 키 고정(pinning), 로그인 속도 제한, 그리고 매 push�
 의존성을 스캔하는 CI 파이프라인을 포함합니다. 자세한 내용은
 아래 [보안](#보안) 섹션을 참고하세요.
 
+🌐 **기본으로 24개 언어 지원** — 상단 바의 드롭다운에서 언제든지
+전환할 수 있습니다: English, Bahasa Indonesia, 中文, Español, العربية,
+Français, Português, বাংলা, Русский, हिन्दी, ไทย, ខ្មែរ, Tagalog, Tiếng
+Việt, 日本語, 한국어, Polski, Italiano, Türkçe, தமிழ், فارسی, Українська,
+Deutsch, Nederlands. 아랍어와 페르시아어는 자동으로 오른쪽에서
+왼쪽으로 표시됩니다.
+
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
 <br>☕ 커피 한 잔 후원해 주세요.
 
@@ -151,6 +158,12 @@ npm run dev
   및 매주(`.github/workflows/security.yml`), Go 백엔드는
   `govulncheck`, 프론트엔드는 `npm audit`(프로덕션 의존성)을
   사용합니다.
+- **데이터베이스 마이그레이션은 바이너리에 내장되어 자동으로
+  적용됩니다.** `backend/internal/database/migrations/`의 모든 SQL
+  파일은 바이너리에 내장되고(`go:embed`), `schema_migrations`
+  테이블로 추적되어 매 시작 시 자동으로 적용되므로, 수동으로 실행하는
+  마이그레이션 스크립트처럼 배포가 스키마 변경을 조용히 건너뛰는 일이
+  절대 없습니다.
 - 백업 내보내기, CORS, HTTP 응답 헤더도 하드닝되어 있습니다 —
   `backend/internal/handlers/export.go`(경로 세그먼트 살균 처리),
   `backend/internal/server/router.go`(`CORS_ALLOWED_ORIGINS`가
@@ -173,7 +186,8 @@ pghba-fleet-manager/
 │   │   └── reencrypt-ssh-keys/         # 시크릿 교체 도구(보안 섹션 참고)
 │   └── internal/
 │       ├── config/                     # 설정 로더 + 시작 시 시크릿 검증
-│       ├── database/                   # GORM 연결
+│       ├── database/                   # GORM 연결 + 내장 SQL 마이그레이션 러너
+│       │   └── migrations/             # 001(initdb를 통한 기준선) + 002–008, 시작 시 자동 적용
 │       ├── models/                     # 모든 GORM 모델
 │       ├── middleware/                 # JWT 인증, RBAC, 속도 제한, 보안 헤더
 │       ├── handlers/                   # Gin HTTP 핸들러
@@ -200,14 +214,11 @@ pghba-fleet-manager/
 │   └── src/
 │       ├── api/index.ts                # Axios API 클라이언트
 │       ├── types/index.ts              # TypeScript 인터페이스 (Go 모델 미러링)
+│       ├── i18n/                       # 24개 로케일 파일 + AVAILABLE_LOCALES 레지스트리 (RTL 지원)
 │       ├── stores/auth.ts              # Pinia 인증 스토어
 │       ├── router/index.ts             # 인증 + 비밀번호 강제 변경 가드가 있는 Vue Router
 │       ├── components/layout/AppLayout.vue
 │       └── views/                      # 기능 영역별 뷰
-│
-├── database/migrations/
-│   ├── 001_init.sql                    # enum, 인덱스, 트리거를 포함한 전체 스키마
-│   └── 002–007_*.sql                   # RBAC 역할, 백업 스케줄, 비밀번호/호스트 키 하드닝
 │
 ├── docs/rotate-secrets.md              # 시크릿 교체 런북
 ├── .github/workflows/security.yml      # CI: build/vet/govulncheck + npm audit

@@ -12,6 +12,13 @@ Manager الأصلي: فرض تغيير كلمة المرور الافتراضي
 أنابيب CI يفحص الاعتماديات في كل عملية دفع. راجع قسم [الأمان](#security)
 أدناه.
 
+🌐 **24 لغة جاهزة للاستخدام** — يمكنك التبديل بينها في أي وقت من القائمة
+المنسدلة في الشريط العلوي: English، Bahasa Indonesia، 中文، Español،
+العربية، Français، Português، বাংলা، Русский، हिन्दी، ไทย، ខ្មែរ،
+Tagalog، Tiếng Việt، 日本語، 한국어، Polski، Italiano، Türkçe، தமிழ்،
+فارسی، Українська، Deutsch، Nederlands. تُعرَض العربية والفارسية
+تلقائيًا من اليمين إلى اليسار.
+
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
 <br>☕ تفضل بدعوتي لفنجان قهوة.
 
@@ -147,6 +154,11 @@ npm run dev
 - **يفحص CI الاعتماديات المعروفة بالثغرات** في كل دفع/طلب سحب وأسبوعيًا
   (`.github/workflows/security.yml`): `govulncheck` للواجهة الخلفية Go،
   و`npm audit` (اعتماديات الإنتاج) للواجهة الأمامية.
+- **ترحيلات قاعدة البيانات مضمَّنة في البرنامج وتُطبَّق تلقائيًا.** كل
+  ملف SQL في `backend/internal/database/migrations/` يُضمَّن داخل الملف
+  التنفيذي (`go:embed`) ويُطبَّق تلقائيًا — مع تتبعه عبر جدول
+  `schema_migrations` — في كل تشغيل، بحيث لا يمكن لأي نشر أن يتخطى
+  بصمت تغييرًا في المخطط كما قد يحدث مع سكربت ترحيل يُشغَّل يدويًا.
 - تصدير النسخ الاحتياطية، وCORS، ورؤوس استجابة HTTP معزَّزة أمنيًا — راجع
   `backend/internal/handlers/export.go` (تعقيم مقاطع المسار)،
   `backend/internal/server/router.go` (CORS يرفض الوصول عبر النطاقات
@@ -169,7 +181,8 @@ pghba-fleet-manager/
 │   │   └── reencrypt-ssh-keys/         # أداة تدوير الأسرار (راجع الأمان)
 │   └── internal/
 │       ├── config/                     # محمّل الإعدادات + التحقق من الأسرار عند البدء
-│       ├── database/                   # اتصال GORM
+│       ├── database/                   # اتصال GORM + منفّذ ترحيلات SQL مضمَّن
+│       │   └── migrations/             # 001 (أساسي، عبر initdb) + 002–008، تُطبَّق تلقائيًا عند التشغيل
 │       ├── models/                     # جميع نماذج GORM
 │       ├── middleware/                 # مصادقة JWT، RBAC، تحديد المعدل، رؤوس الأمان
 │       ├── handlers/                   # معالجات HTTP لـ Gin
@@ -196,14 +209,11 @@ pghba-fleet-manager/
 │   └── src/
 │       ├── api/index.ts                # عميل Axios للـ API
 │       ├── types/index.ts              # واجهات TypeScript (تعكس نماذج Go)
+│       ├── i18n/                       # 24 ملف لغة + سجل AVAILABLE_LOCALES (يدعم RTL)
 │       ├── stores/auth.ts              # متجر مصادقة Pinia
 │       ├── router/index.ts             # موجّه Vue مع حراس المصادقة وتغيير كلمة المرور الإجباري
 │       ├── components/layout/AppLayout.vue
 │       └── views/                      # واجهة واحدة لكل مجال وظيفي
-│
-├── database/migrations/
-│   ├── 001_init.sql                    # المخطط الكامل مع الأنواع والفهارس والمشغّلات
-│   └── 002–007_*.sql                   # أدوار RBAC، جدولة النسخ الاحتياطي، تعزيز كلمة المرور/بصمة المضيف
 │
 ├── docs/rotate-secrets.md              # دليل تدوير الأسرار
 ├── .github/workflows/security.yml      # CI: بناء/فحص/govulncheck + npm audit

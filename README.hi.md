@@ -12,6 +12,12 @@ PostgreSQL इंस्टेंस के पूरे फ्लीट मे�
 और हर push पर dependency स्कैन करने वाला CI पाइपलाइन। नीचे
 [सुरक्षा](#सुरक्षा) अनुभाग देखें।
 
+🌐 **शुरुआत से ही 24 भाषाएं** — टॉपबार के ड्रॉपडाउन से कभी भी बदलें:
+English, Bahasa Indonesia, 中文, Español, العربية, Français, Português,
+বাংলা, Русский, हिन्दी, ไทย, ខ្មែរ, Tagalog, Tiếng Việt, 日本語, 한국어,
+Polski, Italiano, Türkçe, தமிழ், فارسی, Українська, Deutsch, Nederlands।
+अरबी और फ़ारसी अपने आप दाएं-से-बाएं रेंडर होती हैं।
+
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
 <br>☕ कृपया मुझे एक कप कॉफी पिलाएं।
 
@@ -152,6 +158,12 @@ npm run dev
 - **CI हर push/PR पर और साप्ताहिक रूप से ज्ञात कमजोर dependency के लिए
   स्कैन करता है** (`.github/workflows/security.yml`): Go बैकएंड के लिए
   `govulncheck`, फ्रंटएंड के लिए `npm audit` (production dependency)।
+- **डेटाबेस माइग्रेशन एम्बेडेड हैं और खुद-ब-खुद लागू होते हैं।**
+  `backend/internal/database/migrations/` की हर SQL फ़ाइल बाइनरी में
+  एम्बेड की गई है (`go:embed`) और हर स्टार्टअप पर अपने आप लागू हो जाती
+  है — `schema_migrations` टेबल में ट्रैक की जाती है — इसलिए किसी
+  डिप्लॉयमेंट में स्कीमा बदलाव चुपचाप छूट नहीं सकता, जैसा मैन्युअल रूप
+  से चलाई गई माइग्रेशन स्क्रिप्ट में हो सकता है।
 - बैकअप एक्सपोर्ट, CORS और HTTP रिस्पॉन्स हेडर को हार्डन किया गया है —
   देखें `backend/internal/handlers/export.go` (path-segment सैनिटाइजेशन),
   `backend/internal/server/router.go` (जब तक `CORS_ALLOWED_ORIGINS` सेट
@@ -174,7 +186,8 @@ pghba-fleet-manager/
 │   │   └── reencrypt-ssh-keys/         # सीक्रेट-रोटेशन टूल (सुरक्षा देखें)
 │   └── internal/
 │       ├── config/                     # कॉन्फ़िग लोडर + स्टार्टअप सीक्रेट सत्यापन
-│       ├── database/                   # GORM कनेक्शन
+│       ├── database/                   # GORM कनेक्शन + एम्बेडेड SQL माइग्रेशन रनर
+│       │   └── migrations/             # 001 (बेसलाइन, initdb के ज़रिए) + 002–008, स्टार्टअप पर अपने आप लागू
 │       ├── models/                     # सभी GORM मॉडल
 │       ├── middleware/                 # JWT auth, RBAC, रेट लिमिटिंग, security headers
 │       ├── handlers/                   # Gin HTTP हैंडलर
@@ -201,14 +214,11 @@ pghba-fleet-manager/
 │   └── src/
 │       ├── api/index.ts                # Axios API क्लाइंट
 │       ├── types/index.ts              # TypeScript इंटरफेस (Go मॉडल का प्रतिबिंब)
+│       ├── i18n/                       # 24 लोकेल फ़ाइलें + AVAILABLE_LOCALES रजिस्ट्री (RTL-aware)
 │       ├── stores/auth.ts              # Pinia auth store
 │       ├── router/index.ts             # auth + force-password-change गार्ड के साथ Vue Router
 │       ├── components/layout/AppLayout.vue
 │       └── views/                      # हर फीचर एरिया के लिए एक view
-│
-├── database/migrations/
-│   ├── 001_init.sql                    # enum, index, trigger के साथ पूरा स्कीमा
-│   └── 002–007_*.sql                   # RBAC भूमिकाएं, बैकअप शेड्यूल, पासवर्ड/host-key हार्डनिंग
 │
 ├── docs/rotate-secrets.md              # सीक्रेट रोटेशन रनबुक
 ├── .github/workflows/security.yml      # CI: build/vet/govulncheck + npm audit

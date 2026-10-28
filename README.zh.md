@@ -10,6 +10,12 @@ PostgreSQL 实例集群的访问规则，无需在每台主机上手动编辑 `p
 频率限制，以及在每次推送时扫描依赖项的 CI 流水线。详见下方的
 [安全性](#安全性) 部分。
 
+🌐 **开箱即用支持 24 种语言** —— 随时可通过顶部栏的下拉菜单切换：
+English、Bahasa Indonesia、中文、Español、العربية、Français、Português、
+বাংলা、Русский、हिन्दी、ไทย、ខ្មែរ、Tagalog、Tiếng Việt、日本語、한국어、
+Polski、Italiano、Türkçe、தமிழ்、فارسی、Українська、Deutsch、Nederlands。
+阿拉伯语和波斯语会自动以从右到左（RTL）的方式渲染。
+
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
 <br>☕ 请我喝杯咖啡吧。
 
@@ -142,6 +148,11 @@ npm run dev
 - **CI 会在每次推送/PR 以及每周扫描已知存在漏洞的依赖**
   （`.github/workflows/security.yml`）：后端 Go 使用 `govulncheck`，
   前端使用 `npm audit`（仅生产依赖）。
+- **数据库迁移脚本已嵌入二进制文件并自动执行。**
+  `backend/internal/database/migrations/` 中的每个 SQL 文件都会被编译进
+  二进制文件（`go:embed`），并在每次启动时自动执行 —— 通过
+  `schema_migrations` 表进行跟踪 —— 因此部署时不会像手动运行迁移脚本
+  那样可能被静默跳过某个结构变更。
 - 备份导出、CORS 以及 HTTP 响应头均已加固 —— 详见
   `backend/internal/handlers/export.go`（路径片段净化处理）、
   `backend/internal/server/router.go`（默认不允许任何跨域访问，
@@ -164,7 +175,8 @@ pghba-fleet-manager/
 │   │   └── reencrypt-ssh-keys/         # 密钥轮换工具（详见"安全性"）
 │   └── internal/
 │       ├── config/                     # 配置加载器 + 启动时密钥校验
-│       ├── database/                   # GORM 数据库连接
+│       ├── database/                   # GORM 数据库连接 + 嵌入式 SQL 迁移执行器
+│       │   └── migrations/             # 001（基线，通过 initdb）+ 002–008，启动时自动执行
 │       ├── models/                     # 所有 GORM 模型
 │       ├── middleware/                 # JWT 认证、RBAC、频率限制、安全响应头
 │       ├── handlers/                   # Gin HTTP 处理器
@@ -191,14 +203,11 @@ pghba-fleet-manager/
 │   └── src/
 │       ├── api/index.ts                # Axios API 客户端
 │       ├── types/index.ts              # TypeScript 接口（对应 Go 模型）
+│       ├── i18n/                       # 24 个语言文件 + AVAILABLE_LOCALES 注册表（支持 RTL）
 │       ├── stores/auth.ts              # Pinia 认证 store
 │       ├── router/index.ts             # Vue Router，含认证 + 强制改密守卫
 │       ├── components/layout/AppLayout.vue
 │       └── views/                      # 每个功能区域对应一个视图
-│
-├── database/migrations/
-│   ├── 001_init.sql                    # 完整的数据库结构，含枚举、索引、触发器
-│   └── 002–007_*.sql                   # RBAC 角色、备份计划、密码/主机密钥加固
 │
 ├── docs/rotate-secrets.md              # 密钥轮换操作手册
 ├── .github/workflows/security.yml      # CI：build/vet/govulncheck + npm audit

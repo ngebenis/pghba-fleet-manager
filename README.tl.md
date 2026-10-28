@@ -13,6 +13,13 @@ default-password, startup secret validation, SSH host key pinning, login
 rate limiting, at isang CI pipeline na nag-i-scan ng mga dependency sa
 bawat push. Tingnan ang [Seguridad](#seguridad) sa ibaba.
 
+🌐 **24 wika na handa nang gamitin** — palitan anumang oras mula sa
+dropdown sa top bar: English, Bahasa Indonesia, 中文, Español, العربية,
+Français, Português, বাংলা, Русский, हिन्दी, ไทย, ខ្មែរ, Tagalog, Tiếng
+Việt, 日本語, 한국어, Polski, Italiano, Türkçe, தமிழ், فارسی, Українська,
+Deutsch, Nederlands. Awtomatikong nire-render nang right-to-left ang
+Arabic at Persian.
+
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
 <br>☕ Mag-abot ka sa akin ng isang tasa ng kape.
 
@@ -155,6 +162,12 @@ npm run dev
   push/PR at linggo-linggo (`.github/workflows/security.yml`):
   `govulncheck` para sa Go backend, `npm audit` (production dependencies)
   para sa frontend.
+- **Naka-embed at self-applying ang mga database migration.** Bawat SQL
+  file sa `backend/internal/database/migrations/` ay naka-bake sa binary
+  (`go:embed`) at awtomatikong inilalapat — sinusubaybayan sa isang
+  `schema_migrations` table — sa bawat startup, kaya hindi na kailanman
+  tahimik na makakaligtaan ang deploy sa isang pagbabago sa schema tulad
+  ng maaaring mangyari sa manu-manong pinapatakbong migration script.
 - Ang backup export, CORS, at HTTP response headers ay pinatibay — tingnan
   ang `backend/internal/handlers/export.go` (path-segment sanitization),
   `backend/internal/server/router.go` (default na walang cross-origin
@@ -178,7 +191,8 @@ pghba-fleet-manager/
 │   │   └── reencrypt-ssh-keys/         # Tool para sa pag-rotate ng secret (tingnan ang Seguridad)
 │   └── internal/
 │       ├── config/                     # Config loader + startup secret validation
-│       ├── database/                   # Koneksyon ng GORM
+│       ├── database/                   # Koneksyon ng GORM + embedded SQL migration runner
+│       │   └── migrations/             # 001 (baseline, sa pamamagitan ng initdb) + 002–008, awtomatikong inilalapat sa startup
 │       ├── models/                     # Lahat ng GORM model
 │       ├── middleware/                 # JWT auth, RBAC, rate limiting, security headers
 │       ├── handlers/                   # Gin HTTP handlers
@@ -205,14 +219,11 @@ pghba-fleet-manager/
 │   └── src/
 │       ├── api/index.ts                # Axios API client
 │       ├── types/index.ts              # TypeScript interfaces (salamin ng Go models)
+│       ├── i18n/                       # 24 locale file + AVAILABLE_LOCALES registry (RTL-aware)
 │       ├── stores/auth.ts              # Pinia auth store
 │       ├── router/index.ts             # Vue Router na may auth + force-password-change guards
 │       ├── components/layout/AppLayout.vue
 │       └── views/                      # Isang view bawat feature area
-│
-├── database/migrations/
-│   ├── 001_init.sql                    # Kumpletong schema na may enums, indexes, triggers
-│   └── 002–007_*.sql                   # RBAC roles, backup schedules, password/host-key hardening
 │
 ├── docs/rotate-secrets.md              # Runbook ng secret rotation
 ├── .github/workflows/security.yml      # CI: build/vet/govulncheck + npm audit

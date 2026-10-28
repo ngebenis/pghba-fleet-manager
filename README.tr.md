@@ -12,6 +12,13 @@ başlangıçta gizli anahtar doğrulaması, SSH host key pinleme, giriş hız
 sınırlaması ve her push'ta bağımlılıkları tarayan bir CI pipeline'ı
 içerir. Aşağıdaki [Güvenlik](#güvenlik) bölümüne bakın.
 
+🌐 **Kullanıma hazır 24 dil** — üst çubuktaki açılır menüden istediğiniz
+zaman değiştirin: English, Bahasa Indonesia, 中文, Español, العربية,
+Français, Português, বাংলা, Русский, हिन्दी, ไทย, ខ្មែរ, Tagalog,
+Tiếng Việt, 日本語, 한국어, Polski, Italiano, Türkçe, தமிழ், فارسی,
+Українська, Deutsch, Nederlands. Arapça ve Farsça otomatik olarak
+sağdan sola görüntülenir.
+
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
 <br>☕ Bana bir fincan kahve ısmarlayabilirsiniz.
 
@@ -152,6 +159,13 @@ npm run dev
 - **CI, her push/PR'da ve haftalık olarak** (`.github/workflows/security.yml`)
   bilinen güvenlik açığı bulunan bağımlılıkları tarar: Go backend için
   `govulncheck`, frontend için `npm audit` (üretim bağımlılıkları).
+- **Veritabanı migration'ları gömülüdür ve kendiliğinden uygulanır.**
+  `backend/internal/database/migrations/` içindeki her SQL dosyası
+  ikili dosyanın (binary) içine gömülür (`go:embed`) ve her başlangıçta
+  otomatik olarak uygulanır — bir `schema_migrations` tablosunda takip
+  edilerek — böylece bir dağıtım, elle çalıştırılan bir migration
+  betiğinde olabileceği gibi bir şema değişikliğini sessizce asla
+  atlayamaz.
 - Yedek dışa aktarma, CORS ve HTTP yanıt başlıkları güçlendirilmiştir —
   bkz. `backend/internal/handlers/export.go` (yol segmenti temizleme),
   `backend/internal/server/router.go` (`CORS_ALLOWED_ORIGINS`
@@ -175,7 +189,8 @@ pghba-fleet-manager/
 │   │   └── reencrypt-ssh-keys/         # Gizli anahtar döndürme aracı (bkz. Güvenlik)
 │   └── internal/
 │       ├── config/                     # Yapılandırma yükleyici + başlangıç gizli anahtar doğrulaması
-│       ├── database/                   # GORM bağlantısı
+│       ├── database/                   # GORM bağlantısı + gömülü SQL migration motoru
+│       │   └── migrations/             # 001 (temel, initdb ile) + 002–008, başlangıçta otomatik uygulanır
 │       ├── models/                     # Tüm GORM modelleri
 │       ├── middleware/                 # JWT auth, RBAC, hız sınırlama, güvenlik başlıkları
 │       ├── handlers/                   # Gin HTTP işleyicileri
@@ -202,14 +217,11 @@ pghba-fleet-manager/
 │   └── src/
 │       ├── api/index.ts                # Axios API istemcisi
 │       ├── types/index.ts              # TypeScript arayüzleri (Go modellerini yansıtır)
+│       ├── i18n/                       # 24 dil dosyası + AVAILABLE_LOCALES kaydı (RTL destekli)
 │       ├── stores/auth.ts              # Pinia auth store
 │       ├── router/index.ts             # Auth + zorunlu parola değiştirme korumalı Vue Router
 │       ├── components/layout/AppLayout.vue
 │       └── views/                      # Her özellik alanı için bir görünüm
-│
-├── database/migrations/
-│   ├── 001_init.sql                    # Enum, indeks ve tetikleyicilerle tam şema
-│   └── 002–007_*.sql                   # RBAC rolleri, yedek zamanlamaları, parola/host-key güçlendirmesi
 │
 ├── docs/rotate-secrets.md              # Gizli anahtar döndürme kılavuzu
 ├── .github/workflows/security.yml      # CI: build/vet/govulncheck + npm audit

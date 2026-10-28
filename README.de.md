@@ -13,6 +13,13 @@ bei Standardpasswörtern, Validierung von Secrets beim Start, SSH-Host-Key-
 Pinning, Login-Rate-Limiting und eine CI-Pipeline, die bei jedem Push
 Abhängigkeiten scannt. Siehe [Sicherheit](#sicherheit) unten.
 
+🌐 **24 Sprachen von Haus aus** — jederzeit über das Dropdown in der
+oberen Leiste umschaltbar: English, Bahasa Indonesia, 中文, Español,
+العربية, Français, Português, বাংলা, Русский, हिन्दी, ไทย, ខ្មែរ,
+Tagalog, Tiếng Việt, 日本語, 한국어, Polski, Italiano, Türkçe, தமிழ்,
+فارسی, Українська, Deutsch, Nederlands. Arabisch und Persisch werden
+automatisch von rechts nach links dargestellt.
+
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
 <br>☕ Spendiere mir gerne eine Tasse Kaffee.
 
@@ -155,6 +162,13 @@ npm run dev
   verwundbaren Abhängigkeiten** (`.github/workflows/security.yml`):
   `govulncheck` für das Go-Backend, `npm audit` (Produktionsabhängigkeiten)
   für das Frontend.
+- **Datenbank-Migrationen sind eingebettet und wenden sich selbst an.**
+  Jede SQL-Datei in `backend/internal/database/migrations/` wird in die
+  Binärdatei eingebettet (`go:embed`) und automatisch angewendet — nach-
+  verfolgt in einer `schema_migrations`-Tabelle — bei jedem Start, sodass
+  ein Deployment niemals stillschweigend eine Schemaänderung überspringen
+  kann, wie es bei einem manuell ausgeführten Migrationsskript passieren
+  könnte.
 - Backup-Export, CORS und HTTP-Antwort-Header sind gehärtet — siehe
   `backend/internal/handlers/export.go` (Bereinigung von Pfadsegmenten),
   `backend/internal/server/router.go` (CORS verweigert standardmäßig
@@ -177,7 +191,8 @@ pghba-fleet-manager/
 │   │   └── reencrypt-ssh-keys/         # Secret-Rotationstool (siehe Sicherheit)
 │   └── internal/
 │       ├── config/                     # Config-Loader + Secret-Validierung beim Start
-│       ├── database/                   # GORM-Verbindung
+│       ├── database/                   # GORM-Verbindung + eingebetteter SQL-Migrations-Runner
+│       │   └── migrations/             # 001 (Basis, via initdb) + 002–008, wird beim Start automatisch angewendet
 │       ├── models/                     # Alle GORM-Modelle
 │       ├── middleware/                 # JWT-Auth, RBAC, Rate-Limiting, Security-Header
 │       ├── handlers/                   # Gin-HTTP-Handler
@@ -204,14 +219,11 @@ pghba-fleet-manager/
 │   └── src/
 │       ├── api/index.ts                # Axios-API-Client
 │       ├── types/index.ts              # TypeScript-Interfaces (spiegelt Go-Modelle)
+│       ├── i18n/                       # 24 Locale-Dateien + AVAILABLE_LOCALES-Registry (RTL-fähig)
 │       ├── stores/auth.ts              # Pinia-Auth-Store
 │       ├── router/index.ts             # Vue Router mit Auth- + Passwort-Änderungs-Guards
 │       ├── components/layout/AppLayout.vue
 │       └── views/                      # Eine View pro Funktionsbereich
-│
-├── database/migrations/
-│   ├── 001_init.sql                    # Vollständiges Schema mit Enums, Indizes, Triggern
-│   └── 002–007_*.sql                   # RBAC-Rollen, Backup-Zeitpläne, Passwort-/Host-Key-Härtung
 │
 ├── docs/rotate-secrets.md              # Runbook zur Secret-Rotation
 ├── .github/workflows/security.yml      # CI: build/vet/govulncheck + npm audit

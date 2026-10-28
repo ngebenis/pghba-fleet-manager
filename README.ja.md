@@ -13,6 +13,13 @@ SSHホストキーのピン留め、ログインのレート制限、そして
 push毎に依存関係をスキャンするCIパイプラインを備えています。
 詳細は下記の[セキュリティ](#セキュリティ)をご覧ください。
 
+🌐 **24言語に標準対応** — トップバーのドロップダウンからいつでも
+切り替え可能です: English、Bahasa Indonesia、中文、Español、العربية、
+Français、Português、বাংলা、Русский、हिन्दी、ไทย、ខ្មែរ、Tagalog、
+Tiếng Việt、日本語、한국어、Polski、Italiano、Türkçe、தமிழ்、فارسی、
+Українська、Deutsch、Nederlands。アラビア語とペルシア語は自動的に
+右から左へ表示されます。
+
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
 <br>☕ コーヒー一杯分のご支援をいただけると嬉しいです。
 
@@ -151,6 +158,12 @@ npm run dev
   および毎週(`.github/workflows/security.yml`)、Goバックエンドには
   `govulncheck`、フロントエンドには`npm audit`(本番依存関係)を
   使用します。
+- **データベースマイグレーションは組み込まれ、自動的に適用されます。**
+  `backend/internal/database/migrations/`内のすべてのSQLファイルは
+  バイナリに埋め込まれ(`go:embed`)、起動のたびに自動的に適用されます
+  — `schema_migrations`テーブルで追跡されるため、手動実行の
+  マイグレーションスクリプトのようにデプロイがスキーマ変更を
+  黙って見逃すことはありません。
 - バックアップのエクスポート、CORS、HTTPレスポンスヘッダーも
   ハードニングされています。詳細は`backend/internal/handlers/export.go`
   (パスセグメントのサニタイズ)、`backend/internal/server/router.go`
@@ -174,7 +187,8 @@ pghba-fleet-manager/
 │   │   └── reencrypt-ssh-keys/         # シークレットローテーションツール(セキュリティ参照)
 │   └── internal/
 │       ├── config/                     # 設定ローダー + 起動時シークレット検証
-│       ├── database/                   # GORM接続
+│       ├── database/                   # GORM接続 + 埋め込みSQLマイグレーションランナー
+│       │   └── migrations/             # 001(initdb経由のベースライン)+ 002–008、起動時に自動適用
 │       ├── models/                     # すべてのGORMモデル
 │       ├── middleware/                 # JWT認証、RBAC、レート制限、セキュリティヘッダー
 │       ├── handlers/                   # Gin HTTPハンドラー
@@ -201,14 +215,11 @@ pghba-fleet-manager/
 │   └── src/
 │       ├── api/index.ts                # Axios APIクライアント
 │       ├── types/index.ts              # TypeScriptインターフェース(Goモデルをミラー)
+│       ├── i18n/                       # 24のロケールファイル + AVAILABLE_LOCALESレジストリ(RTL対応)
 │       ├── stores/auth.ts              # Pinia認証ストア
 │       ├── router/index.ts             # 認証 + パスワード強制変更ガード付きVue Router
 │       ├── components/layout/AppLayout.vue
 │       └── views/                      # 機能領域ごとのビュー
-│
-├── database/migrations/
-│   ├── 001_init.sql                    # enum、インデックス、トリガーを含む完全なスキーマ
-│   └── 002–007_*.sql                   # RBACロール、バックアップスケジュール、パスワード/ホストキーのハードニング
 │
 ├── docs/rotate-secrets.md              # シークレットローテーションのランブック
 ├── .github/workflows/security.yml      # CI: build/vet/govulncheck + npm audit
