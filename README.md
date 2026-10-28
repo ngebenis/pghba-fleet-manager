@@ -20,7 +20,60 @@ dan pipeline CI yang memindai dependency di setiap push. Lihat bagian
 
 ![Dashboard](docs/screenshots/dashboard.png)
 
-Screenshot lainnya (Hosts, Rules, Temporary Access, dll.) akan ditambahkan secara berkala.
+> Screenshot di bawah ini (Database Hosts, PG Instances, Access Rules,
+> Temporary Access, Backup & Restore, User Management, Audit Log,
+> Settings) adalah **mockup ilustratif** yang dibuat berdasarkan komponen
+> frontend dan skema warna asli repo ini, diisi dengan data
+> dummy/contoh — bukan hasil tangkapan layar dari deployment yang
+> berjalan. Screenshot asli akan menggantikan ini seiring waktu.
+
+<details>
+<summary>Database Hosts</summary>
+
+![Database Hosts](docs/screenshots/hosts.png)
+</details>
+
+<details>
+<summary>PG Instances</summary>
+
+![PG Instances](docs/screenshots/instances.png)
+</details>
+
+<details>
+<summary>Access Rules</summary>
+
+![Access Rules](docs/screenshots/rules.png)
+</details>
+
+<details>
+<summary>Temporary Access</summary>
+
+![Temporary Access](docs/screenshots/temp-access.png)
+</details>
+
+<details>
+<summary>Backup & Restore</summary>
+
+![Backup & Restore](docs/screenshots/backup.png)
+</details>
+
+<details>
+<summary>User Management</summary>
+
+![User Management](docs/screenshots/users.png)
+</details>
+
+<details>
+<summary>Audit Log</summary>
+
+![Audit Log](docs/screenshots/audit.png)
+</details>
+
+<details>
+<summary>Settings</summary>
+
+![Settings](docs/screenshots/settings.png)
+</details>
 
 ---
 

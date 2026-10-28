@@ -19,7 +19,60 @@ that scans dependencies on every push. See [Security](#security) below.
 
 ![Dashboard](docs/screenshots/dashboard.png)
 
-More screenshots (Hosts, Rules, Temporary Access, etc.) will be added here over time.
+> The screenshots below (Database Hosts, PG Instances, Access Rules, Temporary
+> Access, Backup & Restore, User Management, Audit Log, Settings) are
+> **illustrative mockups** built from this repo's actual frontend
+> components and color scheme, populated with dummy/sample data — not a
+> live deployment. Real screenshots will replace them as they become
+> available.
+
+<details>
+<summary>Database Hosts</summary>
+
+![Database Hosts](docs/screenshots/hosts.png)
+</details>
+
+<details>
+<summary>PG Instances</summary>
+
+![PG Instances](docs/screenshots/instances.png)
+</details>
+
+<details>
+<summary>Access Rules</summary>
+
+![Access Rules](docs/screenshots/rules.png)
+</details>
+
+<details>
+<summary>Temporary Access</summary>
+
+![Temporary Access](docs/screenshots/temp-access.png)
+</details>
+
+<details>
+<summary>Backup & Restore</summary>
+
+![Backup & Restore](docs/screenshots/backup.png)
+</details>
+
+<details>
+<summary>User Management</summary>
+
+![User Management](docs/screenshots/users.png)
+</details>
+
+<details>
+<summary>Audit Log</summary>
+
+![Audit Log](docs/screenshots/audit.png)
+</details>
+
+<details>
+<summary>Settings</summary>
+
+![Settings](docs/screenshots/settings.png)
+</details>
 
 ---
 
