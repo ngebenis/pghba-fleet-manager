@@ -32,7 +32,7 @@ services:
       POSTGRES_USER:     ${DB_USER:-admin}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret123}
     volumes:
-      - /home/dco/pghba-manager/pgdata-dev:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
       # Only the baseline schema is bootstrapped here, on a brand-new (empty)
       # data directory. Every migration after that (002+) is applied
       # automatically by the app itself on startup — see
@@ -50,3 +50,6 @@ services:
 networks:
   pghba-net:
     driver: bridge
+
+volumes:
+  pgdata:
