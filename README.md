@@ -1,156 +1,171 @@
 # PGHBA Fleet Manager
 
-PostgreSQL `pg_hba.conf` centralized management system — manage access
-rules across a whole fleet of PostgreSQL instances from a single web UI,
-instead of hand-editing `pg_hba.conf` on every host.
+[🇬🇧 English](README.en.md) | 🇮🇩 **Bahasa Indonesia**
 
-This repository is a hardened, public-ready snapshot of the original
-PGHBA Manager project: default-password enforcement, startup secret
-validation, SSH host key pinning, login rate limiting, and a CI pipeline
-that scans dependencies on every push. See [Security](#security) below.
+Sistem manajemen terpusat untuk `pg_hba.conf` PostgreSQL — kelola aturan
+akses di seluruh fleet instance PostgreSQL dari satu web UI, tanpa perlu
+mengedit `pg_hba.conf` secara manual di setiap host.
+
+Repository ini adalah snapshot yang sudah di-hardening dan siap untuk
+publik dari proyek PGHBA Manager: penegakan ganti password default,
+validasi secret saat startup, SSH host key pinning, rate limiting login,
+dan pipeline CI yang memindai dependency di setiap push. Lihat bagian
+[Keamanan](#keamanan) di bawah.
+
+---
+
+## Screenshot
+
+### Dashboard
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+Screenshot lainnya (Hosts, Rules, Temporary Access, dll.) akan ditambahkan secara berkala.
 
 ---
 
 ## Quick Start (Docker)
 
 ```bash
-# 1. Clone and configure
+# 1. Clone dan konfigurasi
 git clone https://github.com/ngebenis/pghba-fleet-manager.git
 cd pghba-fleet-manager
 
-# 2. Create .env from template (used by docker-compose.yml)
+# 2. Buat .env dari template (dipakai oleh docker-compose.yml)
 cp backend/.env.example .env
 
-# 3. Generate real secrets — the app refuses to start without them
+# 3. Generate secret asli — aplikasi akan menolak start tanpa ini
 openssl rand -base64 48   # → JWT_SECRET
 openssl rand -hex 32      # → ENCRYPTION_KEY
 
-# 4. Edit .env with your real values, then:
+# 4. Edit .env dengan nilai asli Anda, lalu:
 docker compose up -d
 
-# App available at: http://localhost:8080
+# Aplikasi tersedia di: http://localhost:8080
 ```
 
-**First login**: `admin` / `Admin@1234`. This account is force-flagged to
-change its password on first login — the server blocks every other
-action until it's changed, so there's no "forgot to change the default
-password" window.
+**Login pertama**: `admin` / `Admin@1234`. Akun ini diwajibkan untuk
+mengganti password pada login pertama — server akan memblokir semua
+aksi lain sampai password diganti, sehingga tidak ada celah "lupa
+mengganti password default".
 
 ---
 
-## Development Setup
+## Setup Development
 
 ```bash
-# Start only the database
+# Jalankan hanya database
 docker compose -f docker-compose.dev.yml up -d
 
 # Backend (Go)
 cd backend
-cp .env.example .env       # edit as needed
+cp .env.example .env       # sesuaikan jika perlu
 go run ./cmd/server
 
 # Frontend (Vue 3)
 cd frontend
 npm install
 npm run dev
-# → http://localhost:5173 (proxies /api to :8080)
+# → http://localhost:5173 (proxy /api ke :8080)
 ```
 
 ---
 
-## Security
+## Keamanan
 
-- **No insecure defaults can run.** `main.go` calls `config.Validate()`
-  at startup, which refuses to start if `JWT_SECRET` or `ENCRYPTION_KEY`
-  is empty or still the published placeholder — a misconfigured
-  deployment fails loudly instead of running with a forgeable JWT secret
-  or a known AES key.
-- **SSH host keys are pinned**, not ignored. `services.ConnectToHost`
-  trusts a managed host's SSH key on first connection and persists its
-  fingerprint (`db_hosts.ssh_host_key_fingerprint`); any later connection
-  with a different key is refused instead of silently trusted. Clearing
-  a fingerprint after a legitimate host rebuild goes through a dedicated,
-  audited endpoint (`POST /api/hosts/:id/reset-host-key`), never the
-  generic host-edit form.
-- **Login is rate-limited**: 10 failed attempts from one IP within 15
-  minutes locks that IP out for 15 minutes.
-- **Deactivating or demoting a user takes effect immediately** — every
-  authenticated request re-checks status/role against the database
-  instead of trusting what a JWT claimed up to 8 hours ago.
-- **CI scans for known-vulnerable dependencies** on every push/PR and
-  weekly (`.github/workflows/security.yml`): `govulncheck` for the Go
-  backend, `npm audit` (production dependencies) for the frontend.
-- Backup export, CORS, and HTTP response headers are hardened — see
-  `backend/internal/handlers/export.go` (path-segment sanitization),
-  `backend/internal/server/router.go` (CORS defaults to no cross-origin
-  access unless `CORS_ALLOWED_ORIGINS` is set), and
+- **Tidak ada default yang tidak aman yang bisa jalan.** `main.go`
+  memanggil `config.Validate()` saat startup, yang menolak menyala jika
+  `JWT_SECRET` atau `ENCRYPTION_KEY` kosong atau masih nilai placeholder
+  yang dipublikasikan — deployment yang salah konfigurasi akan gagal
+  secara jelas, bukan berjalan dengan JWT secret yang bisa dipalsukan
+  atau AES key yang sudah diketahui publik.
+- **SSH host key di-pin**, bukan diabaikan. `services.ConnectToHost`
+  mempercayai SSH key sebuah host pada koneksi pertama dan menyimpan
+  fingerprint-nya (`db_hosts.ssh_host_key_fingerprint`); koneksi
+  berikutnya dengan key yang berbeda akan ditolak, bukan dipercaya diam-
+  diam. Menghapus fingerprint setelah rebuild host yang sah dilakukan
+  lewat endpoint khusus yang tercatat di audit
+  (`POST /api/hosts/:id/reset-host-key`), bukan lewat form edit host
+  biasa.
+- **Login dibatasi rate-nya**: 10 kali gagal login dari satu IP dalam 15
+  menit akan mengunci IP tersebut selama 15 menit.
+- **Menonaktifkan atau menurunkan role user langsung berlaku** — setiap
+  request yang terautentikasi akan mengecek ulang status/role ke
+  database, bukan mempercayai klaim JWT yang bisa berumur sampai 8 jam.
+- **CI memindai dependency yang diketahui rentan** di setiap push/PR dan
+  setiap minggu (`.github/workflows/security.yml`): `govulncheck` untuk
+  backend Go, `npm audit` (dependency produksi) untuk frontend.
+- Export backup, CORS, dan header response HTTP sudah di-hardening —
+  lihat `backend/internal/handlers/export.go` (sanitasi path segment),
+  `backend/internal/server/router.go` (CORS default-nya menolak akses
+  cross-origin kecuali `CORS_ALLOWED_ORIGINS` di-set), dan
   `backend/internal/middleware/security_headers.go`.
-- **Rotating secrets after a leak**: `backend/cmd/reencrypt-ssh-keys` and
-  [`docs/rotate-secrets.md`](docs/rotate-secrets.md) walk through
-  rotating `JWT_SECRET`/`ENCRYPTION_KEY` and re-encrypting every stored
-  SSH key without data loss.
+- **Rotasi secret setelah ada kebocoran**: `backend/cmd/reencrypt-ssh-keys`
+  dan [`docs/rotate-secrets.md`](docs/rotate-secrets.md) memandu Anda
+  merotasi `JWT_SECRET`/`ENCRYPTION_KEY` dan meng-enkripsi ulang semua
+  SSH key yang tersimpan tanpa kehilangan data.
 
 ---
 
-## Project Structure
+## Struktur Project
 
 ```
 pghba-fleet-manager/
 ├── backend/
 │   ├── cmd/
 │   │   ├── server/main.go              # Entry point
-│   │   └── reencrypt-ssh-keys/         # Secret-rotation tool (see Security)
+│   │   └── reencrypt-ssh-keys/         # Tool rotasi secret (lihat Keamanan)
 │   └── internal/
-│       ├── config/                     # Config loader + startup secret validation
-│       ├── database/                   # GORM connection
-│       ├── models/                     # All GORM models
+│       ├── config/                     # Loader config + validasi secret saat startup
+│       ├── database/                   # Koneksi GORM
+│       ├── models/                     # Semua model GORM
 │       ├── middleware/                 # JWT auth, RBAC, rate limiting, security headers
-│       ├── handlers/                   # Gin HTTP handlers
+│       ├── handlers/                   # Handler HTTP Gin
 │       │   ├── auth.go                 # Login / logout / refresh / change-password
-│       │   ├── hosts.go                # Host CRUD, SSH validate, deploy-key, reset-host-key
-│       │   ├── instances.go            # Instance discovery/scan
-│       │   ├── rules.go                # pg_hba rule CRUD + enable/disable/reorder/clone
-│       │   ├── temp_access.go          # Temporary access grant/revoke
-│       │   ├── backup.go, backup_schedules.go   # Backup create/restore/download + scheduling
-│       │   ├── export.go               # Config/backup export (local + S3)
-│       │   ├── healthcheck.go          # Host health checks + notifications
-│       │   ├── users.go                # User CRUD (SuperAdmin only)
-│       │   ├── audit.go                # Audit log list + diff
+│       │   ├── hosts.go                # CRUD host, validasi SSH, deploy-key, reset-host-key
+│       │   ├── instances.go            # Discovery/scan instance
+│       │   ├── rules.go                # CRUD rule pg_hba + enable/disable/reorder/clone
+│       │   ├── temp_access.go          # Grant/revoke temporary access
+│       │   ├── backup.go, backup_schedules.go   # Create/restore/download backup + penjadwalan
+│       │   ├── export.go               # Export config/backup (lokal + S3)
+│       │   ├── healthcheck.go          # Health check host + notifikasi
+│       │   ├── users.go                # CRUD user (khusus SuperAdmin)
+│       │   ├── audit.go                # List audit log + diff
 │       │   └── dashboard.go, settings.go, conflicts.go, notifications.go
 │       ├── services/
 │       │   ├── ssh.go                  # SSH client, host key pinning (ConnectToHost)
-│       │   ├── hba.go, hba_writer.go    # pg_hba content rendering + atomic write + expiry
-│       │   ├── crypto.go               # AES-256-GCM for SSH keys
+│       │   ├── hba.go, hba_writer.go    # Rendering konten pg_hba + atomic write + expiry
+│       │   ├── crypto.go               # AES-256-GCM untuk SSH key
 │       │   ├── audit.go, notifier.go
-│       ├── scheduler/                  # Cron — expire temp rules every N minutes
-│       └── server/router.go            # Gin router, CORS, all routes
+│       ├── scheduler/                  # Cron — expire rule sementara setiap N menit
+│       └── server/router.go            # Router Gin, CORS, semua route
 │
 ├── frontend/
 │   └── src/
-│       ├── api/index.ts                # Axios API client
-│       ├── types/index.ts              # TypeScript interfaces (mirrors Go models)
+│       ├── api/index.ts                # Klien API Axios
+│       ├── types/index.ts              # Interface TypeScript (mencerminkan model Go)
 │       ├── stores/auth.ts              # Pinia auth store
-│       ├── router/index.ts             # Vue Router with auth + force-password-change guards
+│       ├── router/index.ts             # Vue Router dengan guard auth + force-password-change
 │       ├── components/layout/AppLayout.vue
-│       └── views/                      # One view per feature area
+│       └── views/                      # Satu view per area fitur
 │
 ├── database/migrations/
-│   ├── 001_init.sql                    # Full schema with enums, indexes, triggers
-│   └── 002–007_*.sql                   # RBAC roles, backup schedules, password/host-key hardening
+│   ├── 001_init.sql                    # Skema lengkap dengan enum, index, trigger
+│   └── 002–007_*.sql                   # Role RBAC, backup schedule, hardening password/host-key
 │
-├── docs/rotate-secrets.md              # Secret rotation runbook
+├── docs/rotate-secrets.md              # Runbook rotasi secret
 ├── .github/workflows/security.yml      # CI: build/vet/govulncheck + npm audit
-├── Dockerfile                          # Multi-stage: Vue build + Go build → alpine
-├── docker-compose.yml                  # Production
-└── docker-compose.dev.yml              # Development (DB only)
+├── Dockerfile                          # Multi-stage: build Vue + build Go → alpine
+├── docker-compose.yml                  # Produksi
+└── docker-compose.dev.yml              # Development (DB saja)
 ```
 
 ---
 
-## API Reference
+## Referensi API
 
-The full route list lives in `backend/internal/server/router.go`. Core
-endpoints:
+Daftar route lengkap ada di `backend/internal/server/router.go`. Endpoint
+inti:
 
 ```
 POST   /api/auth/login
@@ -165,9 +180,9 @@ GET    /api/hosts
 POST   /api/hosts
 PUT    /api/hosts/:id
 DELETE /api/hosts/:id
-POST   /api/hosts/validate              # SSH pre-flight check before saving
+POST   /api/hosts/validate              # Cek SSH pre-flight sebelum disimpan
 POST   /api/hosts/:id/deploy-key
-POST   /api/hosts/:id/reset-host-key    # Clear pinned SSH host key fingerprint
+POST   /api/hosts/:id/reset-host-key    # Hapus fingerprint SSH host key yang di-pin
 
 GET    /api/instances
 POST   /api/instances/discover
@@ -204,32 +219,32 @@ GET    /api/audit/diff/:id
 
 ---
 
-## RBAC Permissions
+## Hak Akses RBAC
 
-| Feature               | SuperAdmin | DBA | Operator | Viewer | AccessManager | TempAccessManager |
+| Fitur                  | SuperAdmin | DBA | Operator | Viewer | AccessManager | TempAccessManager |
 |------------------------|:----------:|:---:|:--------:|:------:|:-------------:|:-----------------:|
-| Manage Hosts           | ✓          | ✓   |          |        |               |                    |
-| Manage Instances       | ✓          | ✓   |          |        |               |                    |
-| Add/Edit/Delete Rule   | ✓          | ✓   |          |        | ✓             |                    |
+| Kelola Host            | ✓          | ✓   |          |        |               |                    |
+| Kelola Instance        | ✓          | ✓   |          |        |               |                    |
+| Tambah/Edit/Hapus Rule | ✓          | ✓   |          |        | ✓             |                    |
 | Enable/Disable Rule    | ✓          | ✓   | ✓        |        | ✓             |                    |
-| View Rules             | ✓          | ✓   | ✓        | ✓      | ✓             |                    |
+| Lihat Rule             | ✓          | ✓   | ✓        | ✓      | ✓             |                    |
 | Grant/Revoke Temp Access | ✓        | ✓   | ✓        |        | ✓             | ✓                  |
 | Backup & Restore       | ✓          | ✓   |          |        |               |                    |
-| User Management        | ✓          |     |          |        |               |                    |
-| View Audit Log         | ✓          | ✓   |          |        |               |                    |
+| Manajemen User         | ✓          |     |          |        |               |                    |
+| Lihat Audit Log        | ✓          | ✓   |          |        |               |                    |
 
-`AccessManager` and `TempAccessManager` are scoped roles for teams that
-should only manage access rules / temporary access without full DBA
-privileges over hosts, instances, backups, or users.
+`AccessManager` dan `TempAccessManager` adalah role terbatas untuk tim
+yang hanya perlu mengelola rule akses / temporary access tanpa privilege
+DBA penuh atas host, instance, backup, atau user.
 
 ---
 
-## Production Checklist
+## Checklist Produksi
 
-- [ ] Set real `JWT_SECRET`/`ENCRYPTION_KEY` — the app won't start otherwise
-- [ ] Log in once and change the default admin password (enforced on first login)
-- [ ] Set a strong `DB_PASSWORD`
-- [ ] Enable TLS (`DB_SSL_MODE=require`)
-- [ ] Put the app behind NGINX/Traefik with HTTPS
-- [ ] Restrict Postgres's port to the internal network only
-- [ ] Set `CORS_ALLOWED_ORIGINS` only if the frontend is deployed on a different origin than the API
+- [ ] Set `JWT_SECRET`/`ENCRYPTION_KEY` yang asli — aplikasi tidak akan start tanpa ini
+- [ ] Login sekali dan ganti password default admin (diwajibkan saat login pertama)
+- [ ] Set `DB_PASSWORD` yang kuat
+- [ ] Aktifkan TLS (`DB_SSL_MODE=require`)
+- [ ] Letakkan aplikasi di belakang NGINX/Traefik dengan HTTPS
+- [ ] Batasi port Postgres hanya untuk internal network
+- [ ] Set `CORS_ALLOWED_ORIGINS` hanya jika frontend di-deploy di origin yang berbeda dari API
