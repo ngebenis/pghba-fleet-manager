@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+
+  app:
+    build: .
+    container_name: pghba-manager
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    ports:
+      - "8080:8080"
+    env_file: .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pghba-net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: pghba-manager-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${DB_NAME:-pghba_manager}
+      POSTGRES_USER:     ${DB_USER:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret123}
+    volumes:
+      - /home/dco/pghba-manager/pgdata-dev:/var/lib/postgresql/data
+      - ./database/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-admin} -d ${DB_NAME:-pghba_manager}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pghba-net
+
+
+networks:
+  pghba-net:
+    driver: bridge

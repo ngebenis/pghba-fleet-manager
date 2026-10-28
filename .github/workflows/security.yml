@@ -1,0 +1,55 @@
+name: Security checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Catch newly-disclosed CVEs in dependencies we already pinned, not
+    # just ones introduced by a given PR's diff.
+    - cron: '0 6 * * 1'
+
+jobs:
+  backend:
+    name: Go build, vet, vulncheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    # backend/go.sum is intentionally not committed (see Dockerfile,
+    # stage "Build Backend") — resolve modules the same way the real build
+    # does instead of requiring a go.sum this repo deliberately doesn't keep.
+    env:
+      GOFLAGS: -mod=mod
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          # Pinned to a specific patch, not just '1.26': govulncheck caught
+          # a stdlib vulnerability (crypto/x509, GO-2026-6809) fixed only
+          # in 1.26.10+ — '1.26' alone can resolve to an older patch.
+          go-version: '1.26.10'
+      - run: go mod download
+      - run: go build ./...
+      - run: go vet ./...
+      - run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+
+  frontend:
+    name: npm build, audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run build
+      # --omit=dev: only the dependencies actually shipped in the built
+      # bundle matter here. The dev-only toolchain (vite/esbuild) carries
+      # a known dev-server-only advisory that would need a major version
+      # bump to fully clear — tracked separately, not a reason to fail
+      # every build over code that never reaches production.
+      - run: npm audit --omit=dev --audit-level=high

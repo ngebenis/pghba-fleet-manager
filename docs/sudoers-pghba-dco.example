@@ -1,0 +1,30 @@
+# sudoers untuk pghba-manager (ops user → postgres, tanpa login postgres)
+#
+# Pasang di TIAP target DB host agar pghba-manager bisa jalan sebagai user
+# biasa (contoh: dco) tanpa pernah SSH sebagai OS user postgres.
+# Tanpa ini + RemoveIPC=yes (default systemd), tiap buka-tutup sesi SSH
+# postgres = IPC/shm postgres disapu saat logout (insiden 2026-10-23,
+# 10.1.3.91 freeze 4 cluster).
+#
+# Cara pasang (di tiap host target, sebagai root):
+#   echo 'dco ALL=(postgres) NOPASSWD: /bin/bash -c *' > /etc/sudoers.d/pghba-dco
+#   chmod 440 /etc/sudoers.d/pghba-dco
+#   visudo -c -f /etc/sudoers.d/pghba-dco
+#
+# Atau pakai tombol "Deploy SSH key" di UI pghba-manager — endpoint itu
+# sekarang menulis drop-in ini otomatis (ops_user, default dco).
+#
+# Verifikasi dari host pghba-manager (atau manual):
+#   ssh dco@<target> 'sudo -n -u postgres bash -c "pg_lsclusters --no-header"'
+# Harus keluar daftar cluster TANPA prompt password.
+#
+# Catatan keamanan:
+# - Scope sudo TERBATAS ke target user postgres saja: (postgres), bukan ALL.
+# - /bin/bash -c * artinya argumen apa pun, tapi tetap berjalan SEBAGAI
+#   postgres (bukan root) — tidak ada eskalasi ke root dari aturan ini.
+# - Jangan pernah tambahkan NOPASSWD untuk (ALL) atau /bin/bash tanpa
+#   batas user.
+# - SSH sebagai postgres tetap dilarang walau sudoers ini ada — guard
+#   RequireNonPostgresUser di backend menolaknya dan mengembalikan 4xx.
+
+dco ALL=(postgres) NOPASSWD: /bin/bash -c *
