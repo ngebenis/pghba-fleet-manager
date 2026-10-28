@@ -12,6 +12,12 @@ validasi secret saat startup, SSH host key pinning, rate limiting login,
 dan pipeline CI yang memindai dependency di setiap push. Lihat bagian
 [Keamanan](#keamanan) di bawah.
 
+🌐 **24 bahasa siap pakai** — ganti kapan saja lewat dropdown di topbar:
+English, Bahasa Indonesia, 中文, Español, العربية, Français, Português,
+বাংলা, Русский, हिन्दी, ไทย, ខ្មែរ, Tagalog, Tiếng Việt, 日本語, 한국어,
+Polski, Italiano, Türkçe, தமிழ், فارسی, Українська, Deutsch, Nederlands.
+Arab dan Persia otomatis dirender right-to-left.
+
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?business=b3n1_id@yahoo.com)
 <br>☕ Silakan traktir saya dengan secangkir kopi.
 
@@ -151,6 +157,12 @@ npm run dev
 - **CI memindai dependency yang diketahui rentan** di setiap push/PR dan
   setiap minggu (`.github/workflows/security.yml`): `govulncheck` untuk
   backend Go, `npm audit` (dependency produksi) untuk frontend.
+- **Migration database ter-embed dan jalan otomatis.** Setiap file SQL di
+  `backend/internal/database/migrations/` dibakukan ke dalam binary
+  (`go:embed`) dan diterapkan otomatis — dilacak lewat tabel
+  `schema_migrations` — di setiap startup, jadi deployment tidak akan
+  pernah diam-diam melewati perubahan skema seperti yang bisa terjadi
+  kalau migration dijalankan manual.
 - Export backup, CORS, dan header response HTTP sudah di-hardening —
   lihat `backend/internal/handlers/export.go` (sanitasi path segment),
   `backend/internal/server/router.go` (CORS default-nya menolak akses
@@ -173,7 +185,8 @@ pghba-fleet-manager/
 │   │   └── reencrypt-ssh-keys/         # Tool rotasi secret (lihat Keamanan)
 │   └── internal/
 │       ├── config/                     # Loader config + validasi secret saat startup
-│       ├── database/                   # Koneksi GORM
+│       ├── database/                   # Koneksi GORM + embedded SQL migration runner
+│       │   └── migrations/             # 001 (baseline, via initdb) + 002–008, otomatis jalan saat startup
 │       ├── models/                     # Semua model GORM
 │       ├── middleware/                 # JWT auth, RBAC, rate limiting, security headers
 │       ├── handlers/                   # Handler HTTP Gin
@@ -200,14 +213,11 @@ pghba-fleet-manager/
 │   └── src/
 │       ├── api/index.ts                # Klien API Axios
 │       ├── types/index.ts              # Interface TypeScript (mencerminkan model Go)
+│       ├── i18n/                       # 24 file locale + registry AVAILABLE_LOCALES (RTL-aware)
 │       ├── stores/auth.ts              # Pinia auth store
 │       ├── router/index.ts             # Vue Router dengan guard auth + force-password-change
 │       ├── components/layout/AppLayout.vue
 │       └── views/                      # Satu view per area fitur
-│
-├── database/migrations/
-│   ├── 001_init.sql                    # Skema lengkap dengan enum, index, trigger
-│   └── 002–007_*.sql                   # Role RBAC, backup schedule, hardening password/host-key
 │
 ├── docs/rotate-secrets.md              # Runbook rotasi secret
 ├── .github/workflows/security.yml      # CI: build/vet/govulncheck + npm audit
