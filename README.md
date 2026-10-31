@@ -2,6 +2,8 @@
 
 🇮🇩 **ID** · 🇬🇧 [EN](README.en.md) · 🇨🇳 [ZH](README.zh.md) · 🇪🇸 [ES](README.es.md) · 🇸🇦 [AR](README.ar.md) · 🇫🇷 [FR](README.fr.md) · 🇵🇹 [PT](README.pt.md) · 🇧🇩 [BN](README.bn.md) · 🇷🇺 [RU](README.ru.md) · 🇮🇳 [HI](README.hi.md) · 🇹🇭 [TH](README.th.md) · 🇰🇭 [KM](README.km.md) · 🇵🇭 [TL](README.tl.md) · 🇻🇳 [VI](README.vi.md) · 🇯🇵 [JA](README.ja.md) · 🇰🇷 [KO](README.ko.md) · 🇵🇱 [PL](README.pl.md) · 🇮🇹 [IT](README.it.md) · 🇹🇷 [TR](README.tr.md) · 🇮🇳 [TA](README.ta.md) · 🇮🇷 [FA](README.fa.md) · 🇺🇦 [UK](README.uk.md) · 🇩🇪 [DE](README.de.md) · 🇳🇱 [NL](README.nl.md)
 
+🍜 **[Jelajahi Galeri Kuliner & Budaya Indonesia →](CULTURE.md)**
+
 Sistem manajemen terpusat untuk `pg_hba.conf` PostgreSQL — kelola aturan
 akses di seluruh fleet instance PostgreSQL dari satu web UI, tanpa perlu
 mengedit `pg_hba.conf` secara manual di setiap host.
@@ -314,50 +316,3 @@ DBA penuh atas host, instance, backup, atau user.
 - [ ] Letakkan aplikasi di belakang NGINX/Traefik dengan HTTPS
 - [ ] Batasi port Postgres hanya untuk internal network
 - [ ] Set `CORS_ALLOWED_ORIGINS` hanya jika frontend di-deploy di origin yang berbeda dari API
-
----
-
-## 🍢 Selingan: Tempe Mendoan, Warisan Budaya Takbenda dari Banyumas
-
-*(Bukan bagian dari dokumentasi teknis — sekadar kekayaan kuliner
-Indonesia yang ingin dibagikan di sini.)*
-
-Tempe mendoan adalah makanan khas dari Banyumas, Jawa Tengah, yang telah
-ditetapkan sebagai Warisan Budaya Takbenda Indonesia pada tahun 2021.
-
-### Asal-Usul dan Arti Kata "Mendoan"
-
-- **Arti kata**: berasal dari bahasa Banyumasan, "mendo", yang berarti
-  setengah matang atau lembek.
-- **Teknik memasak**: berbeda dari tempe goreng biasa yang digoreng
-  kering dan renyah, mendoan dibuat dengan mencelupkan irisan tempe
-  tipis ke adonan tepung berbumbu (ditambah irisan daun bawang), lalu
-  digoreng sangat cepat dalam minyak panas.
-- **Makanan cepat saji**: pada zaman dahulu, mendoan sengaja dibuat
-  setengah matang sebagai makanan cepat saji agar pembeli tidak perlu
-  menunggu lama jika ingin segera menyantapnya.
-
-### Sejarah dan Perkembangan
-
-- Olahan tempe tipis khusus ini sudah dikenal masyarakat Banyumas sejak
-  lebih dari satu abad yang lalu.
-- Sejak awal 1960-an, mendoan mulai dikelola secara komersial dan
-  menjadi salah satu motor penggerak pariwisata serta ekonomi kerakyatan
-  di Banyumas (terpusat di daerah seperti Desa Pliken, Kecamatan
-  Kembaran).
-- Keunikan rasa serta sejarahnya membuat tempe mendoan diabadikan
-  sebagai Google Doodle pada tahun 2022 dan resmi diakui secara
-  nasional.
-
-### Nilai Filosofi bagi Masyarakat Banyumas
-
-Bagi warga lokal, mendoan tidak sekadar makanan pendamping minum teh
-atau kopi, tetapi memiliki nilai filosofi yang dalam:
-
-- **Sifat fleksibel**: teksturnya yang lemas dan lembut melambangkan
-  karakter orang Banyumas yang luwes, ramah, dan mudah menyesuaikan
-  diri.
-- **Teguh dalam prinsip**: mendoan bisa menjadi kaku seperti keripik
-  jika digoreng terlalu lama — menyimbolkan keteguhan tekad dan
-  semangat juang, terinspirasi dari para pahlawan asal Banyumas seperti
-  Jenderal Sudirman.
